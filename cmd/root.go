@@ -17,11 +17,7 @@ var rootCmd = &cobra.Command{
 	Short: "Create Airtable schemas!",
 	// Uncomment the following line if your bare application
 	// has an action associated with it:
-	Run: func(cmd *cobra.Command, args []string) {	},
-	PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
-		utils.SetupLogger(internal.Viper.GetString("log-level"))
-		return nil
-	},
+	Run: func(cmd *cobra.Command, args []string) {},
 }
 
 // Execute adds all child commands to the root command and sets flags appropriately.
@@ -35,11 +31,19 @@ func Execute() {
 
 func init() {
 	cobra.OnInitialize(initConfig)
+	cobra.OnInitialize(func() {
+		utils.SetupLogger(internal.Viper.GetString("log-level"))
+		log.Debug("logger set up")
+	})
 
 	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "Config file (default is $XDG_CONFIG_HOME/generate-ddg/config.yaml)")
+
 	rootCmd.PersistentFlags().String("log-level", "", "Log level")
 	internal.Viper.BindPFlag("log-level", rootCmd.PersistentFlags().Lookup("log-level"))
 	internal.Viper.SetDefault("log-level", "info")
+
+	rootCmd.PersistentFlags().String("airtable-token", "", "Airtable API token")
+	internal.Viper.BindPFlag("airtable-token", rootCmd.PersistentFlags().Lookup("airtable-token"))
 }
 
 func initConfig() {

@@ -5,7 +5,17 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "Run (no args)",
+      "name": "download",
+      "type": "go",
+      "request": "launch",
+      "mode": "auto",
+      "program": "${workspaceFolder}",
+      "args": "--config config.yaml download ${input:flags}",
+
+      "console": "integratedTerminal"
+    }
+    {
+      "name": "bring your own args",
       "type": "go",
       "request": "launch",
       "mode": "auto",
