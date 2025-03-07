@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 	"os"
 	"regexp"
@@ -33,11 +32,11 @@ var downloadCmd = &cobra.Command{
 		}
 		log.Debug("verified base ID", "baseId", args[0])
 
-		// TODO: the file shouldn't exist, but the directory should. This should be changed later
-		if info, err := os.Stat(args[1]); errors.Is(err, os.ErrNotExist) {
-			return fmt.Errorf("path %s does not exist", args[1])
-		} else if info.IsDir() {
-			return fmt.Errorf("path %s is a directory", args[1])
+		if info, err := os.Stat(args[1]); err == nil {
+			if info.IsDir() {
+				return fmt.Errorf("output path %s is a directory", args[1])
+			}
+			return fmt.Errorf("output path %s already exists", args[1])
 		}
 		log.Debug("verified output path", "path", args[1])
 
@@ -57,6 +56,14 @@ var downloadCmd = &cobra.Command{
 			log.Fatal("failed to marshal schema to JSON", "error", err)
 		}
 		fmt.Println(string(prettyJsonBytes))
+		file, err := os.OpenFile(output, os.O_WRONLY|os.O_CREATE|os.O_EXCL, 0644)
+		if err != nil {
+			log.Fatal("failed to open output file", "path", output, "error", err)
+		}
+		defer file.Close()
+		if _, err := file.Write(prettyJsonBytes); err != nil {
+			log.Fatal("failed to write to output file", "path", output, "error", err)
+		}
 	},
 }
 
